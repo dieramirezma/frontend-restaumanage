@@ -26,7 +26,7 @@ export default function LoginPage () {
                 alt="Logo RestauManage"
                 className="rounded-full"
               />
-              <h2 className='text-grey-900 font-medium text-2xl'>Inicia Sesión</h2>
+              <h2 className='text-grey-900 font-bold text-2xl'>Inicia Sesión</h2>
               <p className='text-grey-500 w-3/4'>¡Bienvenido! Por favor, ingresa tus credenciales.</p>
             </div>
             <form className="flex max-w-md flex-col gap-4">

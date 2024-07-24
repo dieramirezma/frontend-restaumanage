@@ -26,7 +26,7 @@ export default function RegisterPage () {
                 alt="Logo RestauManage"
                 className="rounded-full"
               />
-              <h2 className='text-grey-900 font-medium text-2xl'>Crea tu cuenta</h2>
+              <h2 className='text-grey-900 font-bold text-2xl'>Crea tu cuenta</h2>
             </div>
             <form className="flex max-w-md flex-col gap-3">
               <div>
