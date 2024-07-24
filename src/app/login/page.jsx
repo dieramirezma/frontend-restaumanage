@@ -34,7 +34,7 @@ export default function LoginPage () {
                 <div className="mb-2 block">
                   <Label className='text-grey-700' htmlFor="email1" value="Usuario o Correo" />
                 </div>
-                <TextInput className='text-grey-500 rounded-lg border-primary-500' id="email" type="email" placeholder="Ingresa tu usuario o correo" required />
+                <TextInput className='text-grey-500 rounded-lg border-primary-500' id="email" type="text" placeholder="Ingresa tu usuario o correo" required />
               </div>
               <div>
                 <div className="mb-2 block">
