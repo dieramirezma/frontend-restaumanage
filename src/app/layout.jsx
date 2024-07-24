@@ -1,6 +1,10 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { headers } from 'next/headers'
 import { Providers } from './providers'
+import Footer from './components/footer'
+import Header from './components/header'
+import Sidebar from './components/sidebar'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -10,16 +14,29 @@ export const metadata = {
 }
 
 export default function RootLayout ({ children }) {
+  const fullPathname = headers().get('x-url').split('/')
+
+  const noLayout = fullPathname.includes('login') || fullPathname.includes('register')
+
   return (
     <html lang="es" className='light'>
       <head>
         <link rel="shortcut icon" href="/favicon/favicon.ico" />
       </head>
-        <body className={inter.className}>
-          <Providers>
-            {children}
-          </Providers>
-        </body>
+      <body className={inter.className}>
+      <div className="flex min-h-screen">
+        {!noLayout && <Sidebar />}
+        <div className="flex flex-col flex-1">
+          {!noLayout && <Header />}
+          <div className="flex-1">
+            <Providers>
+              {children}
+            </Providers>
+          </div>
+          {!noLayout && <Footer />}
+        </div>
+      </div>
+    </body>
     </html>
   )
 }
