@@ -18,6 +18,7 @@ module.exports = {
       colors: {
         logo: '#009ED8',
         primary: {
+          200: '#93BDF8',
           500: '#1570EF',
           600: '#1366D9',
           700: '#0F50AA'

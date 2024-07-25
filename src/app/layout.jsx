@@ -2,7 +2,6 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { headers } from 'next/headers'
 import { Providers } from './providers'
-import Footer from './components/footer'
 import Header from './components/header'
 import Sidebar from './components/sidebar'
 
@@ -23,7 +22,7 @@ export default function RootLayout ({ children }) {
       <head>
         <link rel="shortcut icon" href="/favicon/favicon.ico" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-grey-50`}>
       <div className="flex min-h-screen">
         {!noLayout && <Sidebar />}
         <div className="flex flex-col flex-1">
@@ -33,7 +32,6 @@ export default function RootLayout ({ children }) {
               {children}
             </Providers>
           </div>
-          {!noLayout && <Footer />}
         </div>
       </div>
     </body>
