@@ -8,7 +8,7 @@ export default function Home () {
     headers: ['Nombre', 'Cantidad Recibida', 'Última Cantidad', 'Fecha'],
     rows: [
       ['Surf Excel', '30', '12', '12/12/2021'],
-      ['Dove', '20', '10', '12/12/2021'],
+      ['Dove', '20', '  10', '12/12/2021'],
       ['Pepsi', '10', '5', '12/12/2021']
     ]
   }
@@ -17,7 +17,7 @@ export default function Home () {
       <div className="flex h-28 w-full gap-3">
         <div className="flex-1 bg-white rounded-lg">
           <div className="flex flex-col h-full justify-between">
-            <h3 className="pt-2 pl-2 text-grey-800 font-medium">Resumen de Inventario</h3>
+            <h3 className="pt-2 pl-2 text-grey-800 font-medium text-xl">Resumen de Inventario</h3>
             <div className="flex gap-9 justify-center pb-2">
               <div className="flex flex-col items-center">
                 <Image
@@ -54,7 +54,7 @@ export default function Home () {
         </div>
         <div className="flex-1 bg-white rounded-lg">
           <div className="flex flex-col h-full justify-between">
-            <h3 className="pt-2 pl-2 text-grey-800 font-medium">Resumen de Productos</h3>
+            <h3 className="pt-2 pl-2 text-grey-800 font-medium text-xl">Resumen de Productos</h3>
             <div className="flex px-3 gap-9 pb-2">
               <div className="flex flex-col items-center">
                 <Image
@@ -82,7 +82,7 @@ export default function Home () {
       </div>
       <div className="bg-white h-28 w-full rounded-lg">
         <div className="flex flex-col h-full justify-between">
-            <h3 className="pt-2 pl-2 text-grey-800 font-medium">Resumen de Reservas</h3>
+            <h3 className="pt-2 pl-2 text-grey-800 font-medium text-xl">Resumen de Reservas</h3>
             <div className="flex gap-24 pl-3 pb-2">
               <div className="flex flex-col items-center justify-center">
                 <Image
@@ -129,7 +129,7 @@ export default function Home () {
       </div>
       <div className="flex h-52 w-full gap-3">
         <div className="bg-white rounded-lg w-3/5">
-          <h3 className="pt-2 pl-2 text-grey-800 font-medium">Principales Proveedores</h3>
+          <h3 className="pt-2 pl-2 text-grey-800 font-medium text-xl">Principales Proveedores</h3>
           <div className='relative overflow-x-auto'>
             <Table
               removeWrapper aria-label="Example static collection table"
@@ -166,7 +166,7 @@ export default function Home () {
           </div>
         </div>
         <div className="bg-white rounded-lg w-2/5">
-          <h3 className="pt-2 pl-2 text-grey-800 font-medium">Productos con Bajo Stock</h3>
+          <h3 className="pt-2 pl-2 text-grey-800 font-medium ">Productos con Bajo Stock</h3>
           <div className='flex flex-col gap-5 pt-3 pl-2'>
             <div className='flex gap-7'>
               <div className='flex flex-col'>
