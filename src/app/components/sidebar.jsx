@@ -1,8 +1,12 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export default function Sidebar () {
+  const fullPathname = usePathname()
+  const noLayout = fullPathname.includes('customers')
+
   return (
     <aside className='flex flex-col min-h-full border-solid border-r-2 border-grey-50 justify-between bg-white'>
       <div className='flex flex-col gap-5 pt-6 px-6'>
@@ -16,7 +20,9 @@ export default function Sidebar () {
           />
           <h2 className='text-primary-500 font-bold text-xl'>RestauManage</h2>
         </div>
-        <nav className='px-6'>
+        {!noLayout && (
+
+          <nav className='px-6'>
           <ul className='flex flex-col gap-8 pr-4 py-2'>
             <li>
               <Link href='/' className='flex gap-4 text-gray-600'>
@@ -36,7 +42,7 @@ export default function Sidebar () {
                   width={24}
                   height={24}
                   alt="Inventory icon"
-                />
+                  />
                 Inventario
               </Link>
             </li>
@@ -58,7 +64,7 @@ export default function Sidebar () {
                   width={24}
                   height={24}
                   alt="Employee icon"
-                />
+                  />
                 Empleados
               </Link>
             </li>
@@ -69,12 +75,13 @@ export default function Sidebar () {
                   width={24}
                   height={24}
                   alt="Reservation icon"
-                />
+                  />
                 Reservas
               </Link>
             </li>
           </ul>
         </nav>
+        )}
       </div>
       <div className='flex flex-col px-11 pb-7 gap-8'>
         <div>
