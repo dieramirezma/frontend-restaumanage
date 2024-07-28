@@ -57,3 +57,18 @@ export const fetchCreateSupplier = async (AccessToken, data) => {
     if (error.response && error.response.status === 409) return { error: 'Ya existe un proveedor con este correo' }
   }
 }
+
+export const fetchEmployeesList = async (AccessToken, limit) => {
+  const res = await axios.get(
+    `${process.env.NEXT_PUBLIC_API_URL}employees/list`,
+    {
+      headers: {
+        Authorization: AccessToken
+      },
+      params: {
+        limit
+      }
+    }
+  )
+  return res.data.data
+}

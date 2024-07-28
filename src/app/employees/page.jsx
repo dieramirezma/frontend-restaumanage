@@ -3,100 +3,56 @@
 import { Button } from '@nextui-org/react'
 import { FilterIcon } from '../components/icons'
 import TableContent from '../components/table'
+import { fetchEmployeesList } from '../lib/api'
+import { useEffect, useMemo, useState } from 'react'
+import { useSession } from 'next-auth/react'
+
+const transformData = (items) => {
+  return items.map(item => ({
+    id: item._id,
+    first_name: item.first_name,
+    last_name: item.last_name,
+    contact_number: item.contact_number,
+    email: item.user_id.email,
+    address: item.address,
+    hire_date: item.hire_date.split('T')[0]
+  }))
+}
 
 export default function Employees () {
-  const columns = [
-    { label: 'Nombres', key: 'name' },
-    { label: 'Apellido', key: 'last_name' },
-    { label: 'Contacto', key: 'contact' },
-    { label: 'Correo', key: 'email' },
-    { label: 'Direccion', key: 'address' },
-    { label: 'Rol', key: 'role' }
-  ]
+  const { data: session } = useSession()
 
-  const data = [
-    {
-      id: 1,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
-    },
-    {
-      id: 2,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
-    },
-    {
-      id: 3,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
-    },
-    {
-      id: 4,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
-    },
-    {
-      id: 5,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
-    },
-    {
-      id: 6,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
-    },
-    {
-      id: 7,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
-    },
-    {
-      id: 8,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
-    },
-    {
-      id: 9,
-      name: 'Papa',
-      last_name: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      role: 'Papa'
+  const token = session?.user?.token
+
+  const [loading, setLoading] = useState(true)
+  const [tableDataEmployees, setTableData] = useState([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dataEmployees = await fetchEmployeesList(token, 10)
+
+        setTableData(transformData(dataEmployees.employees))
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching employees list:', error)
+      }
     }
-  ]
+
+    fetchData()
+  }, [])
+
+  const columns = useMemo(
+    () => [
+      { label: 'Nombres', key: 'first_name' },
+      { label: 'Apellido', key: 'last_name' },
+      { label: 'Contacto', key: 'contact_number' },
+      { label: 'Correo', key: 'email' },
+      { label: 'Direccion', key: 'address' },
+      { label: 'Inicio de Contrato', key: 'hire_date' }
+    ],
+    []
+  )
 
   const bottomContent = () => {
     return (
@@ -127,17 +83,19 @@ export default function Employees () {
           </div>
         </div>
         <div>
-          <TableContent
+          {!loading && (
+            <TableContent
             bottomContent={bottomContent()}
             bottomContentPlacement="outside"
             columns={columns}
-            data={data}
+            data={tableDataEmployees}
             classNames={{
               th: ['bg-transparent', 'border-b'],
               td: ['text-grey-700 font-medium text-sm']
             }}
             className='p-4'
-          />
+            />
+          )}
         </div>
       </div>
     </div>
