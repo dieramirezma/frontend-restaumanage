@@ -61,7 +61,7 @@ export default function ModalItem ({ isOpen, onOpenChange, suppliers }) {
                       }
                     })}
                     />
-                    {errors.name && <span className="text-error-500 text-sm font-medium">{errors.name.message}</span>}
+                    {errors.item_name && <span className="text-error-500 text-sm font-medium">{errors.item_name.message}</span>}
                   <Select
                     label="Proveedor"
                     labelPlacement='outside-left'
@@ -81,7 +81,7 @@ export default function ModalItem ({ isOpen, onOpenChange, suppliers }) {
                       </SelectItem>
                     ))}
                   </Select>
-                  {errors.supplier && <span className="text-error-500 text-sm font-medium">{errors.supplier.message}</span>}
+                  {errors.supplier_id && <span className="text-error-500 text-sm font-medium">{errors.supplier_id.message}</span>}
                   <Select
                     label="Categoria"
                     labelPlacement='outside-left'

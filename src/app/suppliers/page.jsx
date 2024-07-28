@@ -4,102 +4,55 @@ import { Button, useDisclosure } from '@nextui-org/react'
 import ModalItem from './addItem'
 import { FilterIcon } from '../components/icons'
 import TableContent from '../components/table'
+import { useEffect, useMemo, useState } from 'react'
+import { fetchSuppliersList } from '../lib/api'
+import { useSession } from 'next-auth/react'
+
+const transformData = (items) => {
+  return items.map(item => ({
+    id: item._id,
+    supplier_name: item.supplier_name,
+    contact: item.contact_number,
+    email: item.email,
+    address: item.address,
+    delivered: Math.floor(Math.random() * (40 - 10 + 1)) + 10
+  }))
+}
 
 export default function Employees () {
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
+  const { data: session } = useSession()
 
-  const columns = [
-    { label: 'Nombres', key: 'name' },
-    { label: 'Producto', key: 'product' },
-    { label: 'Contacto', key: 'contact' },
-    { label: 'Correo', key: 'email' },
-    { label: 'Direccion', key: 'address' },
-    { label: 'Total Entregado', key: 'delivered' }
-  ]
+  const token = session?.user?.token
 
-  const data = [
-    {
-      id: 1,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
-    },
-    {
-      id: 2,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
-    },
-    {
-      id: 3,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
-    },
-    {
-      id: 4,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
-    },
-    {
-      id: 5,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
-    },
-    {
-      id: 6,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
-    },
-    {
-      id: 7,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
-    },
-    {
-      id: 8,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
-    },
-    {
-      id: 9,
-      name: 'Papa',
-      product: 'Papa',
-      contact: 'Papa',
-      email: 'Papa',
-      address: 'Papa',
-      delivered: 'Papa'
+  const [loading, setLoading] = useState(true)
+  const [tableDataSuppliers, setTableData] = useState([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dataSupppliers = await fetchSuppliersList(token, 10)
+
+        setTableData(transformData(dataSupppliers.suppliers))
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching suppliers list:', error)
+      }
     }
-  ]
+
+    fetchData()
+  }, [])
+
+  const columns = useMemo(
+    () => [
+      { label: 'Nombres', key: 'supplier_name' },
+      { label: 'Contacto', key: 'contact' },
+      { label: 'Correo', key: 'email' },
+      { label: 'Direccion', key: 'address' },
+      { label: 'Total Entregado', key: 'delivered' }
+    ],
+    []
+  )
 
   const bottomContent = () => {
     return (
@@ -134,17 +87,19 @@ export default function Employees () {
           </div>
         </div>
         <div>
-          <TableContent
+          {!loading && (
+            <TableContent
             bottomContent={bottomContent()}
             bottomContentPlacement="outside"
             columns={columns}
-            data={data}
+            data={tableDataSuppliers}
             classNames={{
               th: ['bg-transparent', 'border-b'],
               td: ['text-grey-700 font-medium text-sm']
             }}
             className='p-4'
-          />
+            />
+          )}
         </div>
       </div>
     </div>
