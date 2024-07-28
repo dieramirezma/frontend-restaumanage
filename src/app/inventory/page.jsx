@@ -4,66 +4,84 @@ import { Button, useDisclosure } from '@nextui-org/react'
 import { FilterIcon } from '../components/icons'
 import TableContent from '../components/table'
 import ModalItem from './addItem'
+import { useEffect, useMemo, useState } from 'react'
+import { fetchSuppliersList, fetchInventoryList } from '../lib/api'
+import { useSession } from 'next-auth/react'
+
+const transformData = (items) => {
+  return items.map(item => ({
+    id: item._id,
+    item_name: item.item_name,
+    category: item.category,
+    quantity: `${item.quantity} ${item.unit}`,
+    reorder_level: item.reorder_level,
+    supplier: item.supplier_id.supplier_name,
+    status: item.quantity > item.reorder_level ? 'Stock' : item.quantity === 0 ? 'No stock' : 'Low Stock'
+  }))
+}
 
 const Inventory = () => {
+  const [loading, setLoading] = useState(true)
+  const { data: session } = useSession()
+
+  const token = session?.user?.token
+
+  const [tableDataInventory, setTableData] = useState([])
+
+  const [numInventory, setnumInventory] = useState(0)
+  const [lowLevelProducts, setlowLevelProducts] = useState([])
+  const [suppliersData, setsuppliersData] = useState([])
+  const [numCategories, setnumCategories] = useState(0)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dataInventory = await fetchInventoryList(token, 10)
+        const dataSupppliers = await fetchSuppliersList(token)
+
+        const uniqueSuppliers = dataSupppliers.suppliers.map(supplier => ({
+          id: supplier._id,
+          supplier_name: supplier.supplier_name
+        }))
+
+        const totalQuantity = dataInventory.inventory_item.reduce((sum, item) => sum + item.quantity, 0)
+
+        const uniqueCategories = [...new Set(dataInventory.inventory_item.map(item => item.category))]
+
+        const inventoryData = transformData(dataInventory.inventory_item)
+
+        console.log(inventoryData)
+
+        const itemsLowStock = inventoryData.filter(item => item.status === 'Low Stock').length
+        const itemsNoStock = inventoryData.filter(item => item.status === 'No stock').length
+
+        setsuppliersData(uniqueSuppliers)
+        setlowLevelProducts([itemsLowStock, itemsNoStock])
+        setnumCategories(uniqueCategories.length)
+        setnumInventory(totalQuantity)
+        setTableData(inventoryData)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching suppliers list:', error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
 
-  const columns = [
-    { label: 'Producto', key: 'product' },
-    { label: 'Categoria', key: 'category' },
-    { label: 'Cantidad', key: 'quantity' },
-    { label: 'Nivel de Reorden', key: 'reorder_level' },
-    { label: 'Proveedor', key: 'provider' },
-    { label: 'Disponibilidad', key: 'status' }
-  ]
-
-  const data = [
-    {
-      id: 1,
-      product: 'Papa',
-      category: 'Papa',
-      quantity: 'Papa',
-      reorder_level: 'Papa',
-      provider: 'Papa',
-      status: 'Papa'
-    },
-    {
-      id: 2,
-      product: 'Papa',
-      category: 'Papa',
-      quantity: 'Papa',
-      reorder_level: 'Papa',
-      provider: 'Papa',
-      status: 'Papa'
-    },
-    {
-      id: 3,
-      product: 'Papa',
-      category: 'Papa',
-      quantity: 'Papa',
-      reorder_level: 'Papa',
-      provider: 'Papa',
-      status: 'Papa'
-    },
-    {
-      id: 4,
-      product: 'Papa',
-      category: 'Papa',
-      quantity: 'Papa',
-      reorder_level: 'Papa',
-      provider: 'Papa',
-      status: 'Papa'
-    },
-    {
-      id: 5,
-      product: 'Papa',
-      category: 'Papa',
-      quantity: 'Papa',
-      reorder_level: 'Papa',
-      provider: 'Papa',
-      status: 'Papa'
-    }
-  ]
+  const columns = useMemo(
+    () => [
+      { label: 'Producto', key: 'item_name' },
+      { label: 'Categoria', key: 'category' },
+      { label: 'Cantidad', key: 'quantity' },
+      { label: 'Nivel de Reorden', key: 'reorder_level' },
+      { label: 'Proveedor', key: 'supplier' },
+      { label: 'Disponibilidad', key: 'status' }
+    ],
+    []
+  )
 
   const bottomContent = () => {
     return (
@@ -88,12 +106,12 @@ const Inventory = () => {
             <div className="flex justify-between">
               <div className="flex flex-col gap-3">
                 <h4 className="font-semibold text-base text-primary-500">Categorías</h4>
-                <p className="font-semibold text-base text-grey-600">14</p>
+                <p className="font-semibold text-base text-grey-600">{ !loading ? numCategories : 0 }</p>
                 <p className="text-sm text-grey-400">Últimos 7 días</p>
               </div>
               <div className="flex flex-col gap-3">
                 <h4 className="font-semibold text-base text-[#E19133]">Productos Totales</h4>
-                <p className="font-semibold text-base text-grey-600">868</p>
+                <p className="font-semibold text-base text-grey-600">{ !loading ? numInventory : 0 }</p>
                 <p className="text-sm text-grey-400">Últimos 7 días</p>
               </div>
               <div className="flex flex-col gap-3">
@@ -105,11 +123,11 @@ const Inventory = () => {
                 <h4 className="font-semibold text-base text-error-400">Stock</h4>
                 <div className="flex gap-14">
                   <div>
-                    <p className="font-semibold text-base text-grey-600 pb-3">12</p>
+                    <p className="font-semibold text-base text-grey-600 pb-3">{!loading ? lowLevelProducts[0] : 0}</p>
                     <p className="text-sm text-grey-400">Bajo</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-base text-grey-600 pb-3">2</p>
+                    <p className="font-semibold text-base text-grey-600 pb-3">{!loading ? lowLevelProducts[1] : 0}</p>
                     <p className="text-sm text-grey-400">Sin stock</p>
                   </div>
                 </div>
@@ -124,7 +142,7 @@ const Inventory = () => {
               <Button onPress={ onOpen } radius='sm' className="bg-primary-600 text-white font-medium">
                 Nuevo Producto
               </Button>
-              <ModalItem isOpen={ isOpen } onOpenChange={ onOpenChange } />
+              <ModalItem isOpen={isOpen} onOpenChange={onOpenChange} suppliers={suppliersData} />
               <Button radius='sm' variant='ghost' startContent={<FilterIcon />} className="text-grey-600 font-medium border-grey-100">
                 Filtros
               </Button>
@@ -134,17 +152,20 @@ const Inventory = () => {
             </div>
           </div>
           <div>
-            <TableContent
-              bottomContent={bottomContent()}
-              bottomContentPlacement="outside"
-              columns={columns}
-              data={data}
-              classNames={{
-                th: ['bg-transparent', 'border-b'],
-                td: ['text-grey-700 font-medium text-sm']
-              }}
-              className='p-4'
-            />
+            {!loading && (
+              <TableContent
+                bottomContent={bottomContent()}
+                bottomContentPlacement="outside"
+                columns={columns}
+                data={tableDataInventory}
+                suppliers={suppliersData}
+                classNames={{
+                  th: ['bg-transparent', 'border-b'],
+                  td: ['text-grey-700 font-medium text-sm']
+                }}
+                className='p-4'
+              />
+            )}
           </div>
         </div>
       </div>

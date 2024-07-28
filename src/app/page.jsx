@@ -3,33 +3,47 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@nextui-org/react'
-import { fetchSuppliersList } from './lib/api'
+import { fetchSuppliersList, fetchInventoryList } from './lib/api'
+import { useSession } from 'next-auth/react'
 
 export default function Dashboard () {
-  // const tableData = {
-  //   headers: ['Nombre', 'Cantidad Recibida', 'Última Cantidad', 'Fecha'],
-  //   rows: [
-  //     ['Surf Excel', '30', '12', '12/12/2021'],
-  //     ['Dove', '20', '  10', '12/12/2021'],
-  //     ['Pepsi', '10', '5', '12/12/2021']
-  //   ]
-  // }
   const [loading, setLoading] = useState(true)
+  const { data: session } = useSession()
 
-  const [tableData, setTableData] = useState({
+  const token = session?.user?.token
+
+  const [tableDataSuppliers, setTableData] = useState({
     headers: ['Nombre', 'Cantidad Recibida', 'Última Cantidad', 'Fecha'],
     rows: []
   })
 
+  const [numInventory, setnumInventory] = useState(0)
+  const [numSuppliers, setnumSuppliers] = useState(0)
+  const [lowLevelProducts, setlowLevelProducts] = useState([])
+  const [numCategories, setnumCategories] = useState(0)
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchSuppliersList()
-        console.log(data.suppliers)
+        const dataInventory = await fetchInventoryList(token)
+        const dataSupppliers = await fetchSuppliersList(token)
+
+        const totalQuantity = dataInventory.inventory_item.reduce((sum, item) => sum + item.quantity, 0)
+
+        const uniqueCategories = [...new Set(dataInventory.inventory_item.map(item => item.category))]
+
+        setnumCategories(uniqueCategories.length)
+
+        const lowLevel = dataInventory.inventory_item.filter(item => item.quantity < item.reorder_level)
+
+        setlowLevelProducts(lowLevel)
+
+        setnumInventory(totalQuantity)
         setTableData({
           headers: ['Nombre', 'Cantidad Recibida', 'Última Cantidad', 'Fecha'],
-          rows: data.suppliers.map(supplier => [supplier.supplier_name, 0, 0, supplier.created_at.split('T')[0]])
+          rows: dataSupppliers.suppliers.map(supplier => [supplier.supplier_name, 0, 0, supplier.created_at.split('T')[0]])
         })
+        setnumSuppliers(dataSupppliers.totalDocs)
         setLoading(false)
       } catch (error) {
         console.error('Error fetching suppliers list:', error)
@@ -54,7 +68,13 @@ export default function Dashboard () {
                   height={24}
                   alt="Cantidad Disponible icon"
                 />
-                <p className="font-medium text-grey-600">868</p>
+                {loading
+                  ? (
+                      <p className="font-medium text-grey-600">...</p>
+                    )
+                  : (
+                      <p className="font-medium text-grey-600">{numInventory}</p>
+                    )}
                 <p className="text-xs">Cantidad disponible</p>
               </div>
               <div className="flex flex-col items-center">
@@ -64,7 +84,7 @@ export default function Dashboard () {
                   height={24}
                   alt="Cantidad Disponible icon"
                 />
-                <p className="font-medium text-grey-600">200</p>
+                <p className="font-medium text-grey-600">0</p>
                 <p className="text-xs">Últimos recibidos</p>
               </div>
               <div className="flex flex-col items-center">
@@ -74,7 +94,7 @@ export default function Dashboard () {
                   height={24}
                   alt="Cantidad Disponible icon"
                 />
-                <p className="font-medium text-grey-600">200</p>
+                <p className="font-medium text-grey-600">0</p>
                 <p className="text-xs">Últimos sacados</p>
               </div>
             </div>
@@ -91,7 +111,13 @@ export default function Dashboard () {
                   height={24}
                   alt="Numero de proveedores icon"
                 />
-                <p className="font-medium text-grey-600">31</p>
+                {loading
+                  ? (
+                      <p className="font-medium text-grey-600">...</p>
+                    )
+                  : (
+                      <p className="font-medium text-grey-600">{numSuppliers}</p>
+                    )}
                 <p className="text-xs">Número de proveedores</p>
               </div>
               <div className="flex flex-col items-center">
@@ -101,7 +127,7 @@ export default function Dashboard () {
                   height={24}
                   alt="Numero de categorias icon"
                 />
-                <p className="font-medium text-grey-600">21</p>
+                <p className="font-medium text-grey-600">{ !loading ? numCategories : 0 }</p>
                 <p className="text-xs">Número de categorías</p>
               </div>
             </div>
@@ -120,7 +146,7 @@ export default function Dashboard () {
                   alt="Cantidad Disponible icon"
                 />
                 <div className='flex items-center gap-4'>
-                  <p className="font-medium text-grey-600">82</p>
+                  <p className="font-medium text-grey-600">1</p>
                   <p className="text-xs">Reservas</p>
                 </div>
               </div>
@@ -132,7 +158,7 @@ export default function Dashboard () {
                   alt="Cantidad Disponible icon"
                 />
                 <div className='flex items-center gap-4'>
-                  <p className="font-medium text-grey-600">3</p>
+                  <p className="font-medium text-grey-600">1</p>
                   <p className="text-xs">Activas</p>
                 </div>
               </div>
@@ -170,29 +196,29 @@ export default function Dashboard () {
               className='p-4'
             >
               <TableHeader>
-                <TableColumn>{ tableData.headers[0] }</TableColumn>
-                <TableColumn>{ tableData.headers[1] }</TableColumn>
-                <TableColumn>{ tableData.headers[2] }</TableColumn>
-                <TableColumn>{ tableData.headers[3] }</TableColumn>
+                <TableColumn>{ tableDataSuppliers.headers[0] }</TableColumn>
+                <TableColumn>{ tableDataSuppliers.headers[1] }</TableColumn>
+                <TableColumn>{ tableDataSuppliers.headers[2] }</TableColumn>
+                <TableColumn>{ tableDataSuppliers.headers[3] }</TableColumn>
               </TableHeader>
               <TableBody>
                 <TableRow key="1">
-                  <TableCell>{ tableData.rows[0][0]}</TableCell>
-                  <TableCell>{ tableData.rows[0][1]}</TableCell>
-                  <TableCell>{ tableData.rows[0][2]}</TableCell>
-                  <TableCell>{ tableData.rows[0][3]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[0][0]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[0][1]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[0][2]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[0][3]}</TableCell>
                 </TableRow>
                 <TableRow key="2">
-                  <TableCell>{ tableData.rows[1][0]}</TableCell>
-                  <TableCell>{ tableData.rows[1][1]}</TableCell>
-                  <TableCell>{ tableData.rows[1][2]}</TableCell>
-                  <TableCell>{ tableData.rows[1][3]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[1][0]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[1][1]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[1][2]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[1][3]}</TableCell>
                 </TableRow>
                 <TableRow key="3">
-                  <TableCell>{ tableData.rows[2][0]}</TableCell>
-                  <TableCell>{ tableData.rows[2][1]}</TableCell>
-                  <TableCell>{ tableData.rows[2][2]}</TableCell>
-                  <TableCell>{ tableData.rows[2][3]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[2][0]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[2][1]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[2][2]}</TableCell>
+                  <TableCell>{ tableDataSuppliers.rows[2][3]}</TableCell>
                 </TableRow>
               </TableBody>
               </Table>
@@ -204,22 +230,34 @@ export default function Dashboard () {
           <div className='flex flex-col gap-5 pt-3 pl-2'>
             <div className='flex gap-7'>
               <div className='flex flex-col'>
-                <h4 className='text-sm font-bold text-grey-800'>Tata Salt</h4>
-                <p className='text-xs text-grey-500'>Remaining Quantity : 10 Packet</p>
+                {!loading &&
+                  <>
+                    <h4 className='text-sm font-bold text-grey-800'>{lowLevelProducts[0].item_name}</h4>
+                    <p className='text-xs text-grey-500'>Remaining Quantity : {lowLevelProducts[0].quantity} {lowLevelProducts[0].unit}</p>
+                  </>
+                }
               </div>
               <h5 className='inline-block text-xs text-error-700 font-medium bg-error-50 rounded-lg px-2 self-center'>Low</h5>
             </div>
             <div className='flex gap-7'>
               <div className='flex flex-col'>
-                <h4 className='text-sm font-bold text-grey-800'>Lays</h4>
-                <p className='text-xs text-grey-500'>Remaining Quantity : 15 Packet</p>
+                {!loading &&
+                  <>
+                    <h4 className='text-sm font-bold text-grey-800'>{lowLevelProducts[1].item_name}</h4>
+                    <p className='text-xs text-grey-500'>Remaining Quantity : {lowLevelProducts[1].quantity} {lowLevelProducts[1].unit}</p>
+                  </>
+                }
               </div>
               <h5 className='inline-block text-xs text-error-700 font-medium bg-error-50 rounded-lg px-2 self-center'>Low</h5>
             </div>
             <div className='flex gap-7'>
               <div className='flex flex-col'>
-                <h4 className='text-sm font-bold text-grey-800'>Tata Salt</h4>
-                <p className='text-xs text-grey-500'>Remaining Quantity : 10 Packet</p>
+                {!loading && (
+                  <>
+                    <h4 className='text-sm font-bold text-grey-800'>{lowLevelProducts[2].item_name}</h4>
+                    <p className='text-xs text-grey-500'>Remaining Quantity : {lowLevelProducts[2].quantity} {lowLevelProducts[2].unit}</p>
+                  </>
+                )}
               </div>
               <h5 className='inline-block text-xs text-error-700 font-medium bg-error-50 rounded-lg px-2 self-center'>Low</h5>
             </div>

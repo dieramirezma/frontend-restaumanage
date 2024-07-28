@@ -1,11 +1,38 @@
 import axios from 'axios'
 
-export const fetchSuppliersList = async () => {
+export const fetchSuppliersList = async (AccessToken) => {
   const res = await axios.get(
     `${process.env.NEXT_PUBLIC_API_URL}suppliers/list`,
     {
       headers: {
-        Authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjhlODk0NmNiYTkxNTFjYWM2OTkyOTMiLCJ1c2VybmFtZSI6ImRpZWdvIiwicm9sZUlkIjoiNjZhNTYwODA5YWI1ZGI0ODNmZGVlYzYyIiwiaWF0IjoxNzIyMTQyODM2LCJleHAiOjE3MjIxNDY0MzZ9.d--t0i4-rDEhMo_7GkVHTzizTuMbY8ctlvXfrQKdopA'
+        Authorization: AccessToken
+      }
+    }
+  )
+  return res.data.data
+}
+
+export const fetchInventoryList = async (AccessToken, limit) => {
+  const res = await axios.get(
+    `${process.env.NEXT_PUBLIC_API_URL}inventories/list`,
+    {
+      headers: {
+        Authorization: AccessToken
+      },
+      params: {
+        limit
+      }
+    }
+  )
+  return res.data.data
+}
+
+export const fetchCreateInventory = async (AccessToken, data) => {
+  const res = await axios.post(
+    `${process.env.NEXT_PUBLIC_API_URL}inventories/create`, data,
+    {
+      headers: {
+        Authorization: AccessToken
       }
     }
   )
