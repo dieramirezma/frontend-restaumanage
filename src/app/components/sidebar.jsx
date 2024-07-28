@@ -1,11 +1,20 @@
 'use client'
+import { Button } from '@nextui-org/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { LogoutIcon } from './icons'
+import { signOut } from 'next-auth/react'
 
 export default function Sidebar () {
   const fullPathname = usePathname()
   const noLayout = fullPathname.includes('customers')
+  const noSidebarPaths = ['login', 'register', 'forgot-password', 'reset-password']
+  const noSideBar = noSidebarPaths.some(path => fullPathname.includes(path))
+
+  if (noSideBar) {
+    return
+  }
 
   return (
     <aside className='flex flex-col min-h-full border-solid border-r-2 border-grey-50 justify-between bg-white'>
@@ -16,6 +25,7 @@ export default function Sidebar () {
             width={48}
             height={48}
             alt="Logo RestauManage"
+            priority={true}
             className="rounded-full"
           />
           <h2 className='text-primary-500 font-bold text-xl'>RestauManage</h2>
@@ -85,26 +95,9 @@ export default function Sidebar () {
       </div>
       <div className='flex flex-col px-11 pb-7 gap-8'>
         <div>
-          <Link href='/' className='flex gap-4 text-gray-600'>
-            <Image
-              src="/icons/settings.svg"
-              width={24}
-              height={24}
-              alt="Settings icon"
-            />
-            Ajustes
-          </Link>
-        </div>
-        <div>
-          <Link href='/' className='flex gap-4 text-gray-600'>
-            <Image
-              src="/icons/logout.svg"
-              width={24}
-              height={24}
-              alt="Logout icon"
-            />
+          <Button onClick={() => signOut()} className='bg-error-400 flex gap-4 font-semibold text-white' startContent={<LogoutIcon />}>
             Cerrar Sesión
-          </Link>
+          </Button>
         </div>
       </div>
     </aside>

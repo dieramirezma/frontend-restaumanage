@@ -1,17 +1,45 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@nextui-org/react'
+import { fetchSuppliersList } from './lib/api'
 
-export default function Home () {
-  const tableData = {
+export default function Dashboard () {
+  // const tableData = {
+  //   headers: ['Nombre', 'Cantidad Recibida', 'Última Cantidad', 'Fecha'],
+  //   rows: [
+  //     ['Surf Excel', '30', '12', '12/12/2021'],
+  //     ['Dove', '20', '  10', '12/12/2021'],
+  //     ['Pepsi', '10', '5', '12/12/2021']
+  //   ]
+  // }
+  const [loading, setLoading] = useState(true)
+
+  const [tableData, setTableData] = useState({
     headers: ['Nombre', 'Cantidad Recibida', 'Última Cantidad', 'Fecha'],
-    rows: [
-      ['Surf Excel', '30', '12', '12/12/2021'],
-      ['Dove', '20', '  10', '12/12/2021'],
-      ['Pepsi', '10', '5', '12/12/2021']
-    ]
-  }
+    rows: []
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchSuppliersList()
+        console.log(data.suppliers)
+        setTableData({
+          headers: ['Nombre', 'Cantidad Recibida', 'Última Cantidad', 'Fecha'],
+          rows: data.suppliers.map(supplier => [supplier.supplier_name, 0, 0, supplier.created_at.split('T')[0]])
+        })
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching suppliers list:', error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // console.log(tableDataT)
   return (
     <div className="flex flex-col gap-3 pt-3 px-6">
       <div className="flex h-28 w-full gap-3">
@@ -131,6 +159,11 @@ export default function Home () {
         <div className="bg-white rounded-lg w-3/5">
           <h3 className="pt-2 pl-2 text-grey-800 font-medium text-xl">Principales Proveedores</h3>
           <div className='relative overflow-x-auto'>
+            {loading
+              ? (
+              <p>Cargando datos...</p>
+                )
+              : (
             <Table
               removeWrapper aria-label="Example static collection table"
               classNames={{ th: ['bg-transparent', 'border-b'] }}
@@ -162,7 +195,8 @@ export default function Home () {
                   <TableCell>{ tableData.rows[2][3]}</TableCell>
                 </TableRow>
               </TableBody>
-            </Table>
+              </Table>
+                )}
           </div>
         </div>
         <div className="bg-white rounded-lg w-2/5">

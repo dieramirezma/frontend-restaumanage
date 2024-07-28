@@ -37,6 +37,7 @@ module.exports = {
         error: {
           50: '#FEECEB',
           400: '#F36960',
+          500: '#F04438',
           700: '#AA3028'
         },
         warning: {
