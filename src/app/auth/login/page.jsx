@@ -23,7 +23,6 @@ export default function LoginPage () {
     })
 
     if (res.error) {
-      console.log('Error', res)
       setErrorReq('Correo o contraseña inválidos')
     } else {
       if (status === 'authenticated') {

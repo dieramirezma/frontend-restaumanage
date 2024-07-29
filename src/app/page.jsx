@@ -53,7 +53,6 @@ export default function Dashboard () {
     fetchData()
   }, [])
 
-  // console.log(tableDataT)
   return (
     <div className="flex flex-col gap-3 pt-3 px-6">
       <div className="flex h-28 w-full gap-3">

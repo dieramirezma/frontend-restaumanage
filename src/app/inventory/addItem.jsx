@@ -20,7 +20,6 @@ export default function ModalItem ({ isOpen, onOpenChange, suppliers }) {
     const res = await fetchCreateInventory(token, data)
 
     if (res.error) {
-      console.log(res.error)
       setErrorReq(res.error)
     } else {
       onOpenChange(false)

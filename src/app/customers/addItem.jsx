@@ -16,21 +16,15 @@ export default function ModalItem ({ isOpen, onOpenChange, idTable }) {
 
   const onSubmit = handleSubmit(async data => {
     data.table_id = idTable
-    const res = await fetchCreateReservation(token, data)
+    await fetchCreateReservation(token, data)
 
-    if (res.error) {
-      console.log(res.error)
-    } else {
-      const res = await fetchUpdateTable(token, idTable, { status: 'Reservada' })
-      if (res.error) {
-        console.log(res.error)
-      } else {
-        onOpenChange(false)
-        reset()
-        router.refresh()
-      }
-    }
-  })
+    await fetchUpdateTable(token, idTable, { status: 'Reservada' })
+
+    onOpenChange(false)
+    reset()
+    router.refresh()
+  }
+  )
 
   return (
     <>

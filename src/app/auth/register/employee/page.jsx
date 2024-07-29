@@ -1,40 +1,9 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
-import { useState } from 'react'
 import { Button, Label, TextInput } from 'flowbite-react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 
 export default function RegisterEmployeePage () {
-  const [errorReq, setErrorReq] = useState('')
-  const { register, handleSubmit, formState: { errors } } = useForm()
-  const router = useRouter()
-
-  const onSubmit = handleSubmit(async data => {
-    console.log(data)
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}employees/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username: data.username, email: data.email, password: data.password })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Register successful', data)
-
-        router.push('/auth/login')
-      } else {
-        const errorData = await response.json()
-        setErrorReq(errorData.message || 'Error en el registro de usuario')
-      }
-    } catch (error) {
-      setErrorReq('Error en la conexión con el servidor')
-    }
-  })
   return (
     <div className='flex justify-evenly items-center h-screen'>
       <div>

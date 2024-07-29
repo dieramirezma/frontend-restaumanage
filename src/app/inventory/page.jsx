@@ -50,8 +50,6 @@ const Inventory = () => {
 
         const inventoryData = transformData(dataInventory.inventory_item)
 
-        console.log(inventoryData)
-
         const itemsLowStock = inventoryData.filter(item => item.status === 'Low Stock').length
         const itemsNoStock = inventoryData.filter(item => item.status === 'No stock').length
 

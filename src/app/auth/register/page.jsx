@@ -13,7 +13,6 @@ export default function RegisterPage () {
   const router = useRouter()
 
   const onSubmit = handleSubmit(async data => {
-    console.log(data)
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}users/register`, {
         method: 'POST',
@@ -24,9 +23,6 @@ export default function RegisterPage () {
       })
 
       if (response.ok) {
-        const data = await response.json()
-        console.log('Register successful', data)
-
         router.push('/auth/login')
       } else {
         const errorData = await response.json()
