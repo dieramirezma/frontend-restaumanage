@@ -3,15 +3,41 @@
 import CardTable from '../components/card-table'
 import { useDisclosure } from '@nextui-org/react'
 import ModalItem from './addItem'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { fetchTablesList } from '../lib/api'
+import { useSession } from 'next-auth/react'
 
 const TablesPage = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
   const [selectTable, setSelectedTable] = useState(null)
 
-  const handleCardClick = (number) => {
-    setSelectedTable(number)
-    onOpen()
+  const { data: session } = useSession()
+
+  const token = session?.user?.token
+
+  const [loading, setLoading] = useState(true)
+  const [dataTables, setdataTables] = useState([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchTablesList(token, 10)
+
+        setdataTables(data.tables)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching tables list:', error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  const handleCardClick = (idTable, status) => {
+    if (status !== 'Reservada') {
+      setSelectedTable(idTable)
+      onOpen()
+    }
   }
 
   return (
@@ -19,16 +45,14 @@ const TablesPage = () => {
       <div className="bg-white rounded-lg">
         <div className="flex flex-col gap-5 py-4 px-4">
           <h3 className="text-grey-800 font-medium text-xl">Mesas</h3>
-          {/* Grid 2 columns 3 rows */}
-          <div className='grid grid-cols-2 grid-rows-3 gap-10 place-items-center'>
-            <CardTable onClick={handleCardClick} number={1} capacity={4} location={'Indoor'} status={'Disponible'}/>
-            <CardTable onClick={handleCardClick} number={2} capacity={4} location={'Indoor'} status={'Disponible'}/>
-            <CardTable onClick={handleCardClick} number={3} capacity={4} location={'Indoor'} status={'Disponible'}/>
-            <CardTable onClick={handleCardClick} number={4} capacity={4} location={'Indoor'} status={'Disponible'}/>
-            <CardTable onClick={handleCardClick} number={5} capacity={4} location={'Indoor'} status={'Disponible'}/>
-            <CardTable onClick={handleCardClick} number={6} capacity={4} location={'Indoor'} status={'Disponible'}/>
-          </div>
-          <ModalItem isOpen={isOpen} onOpenChange={onOpenChange} number={selectTable}/>
+            {!loading && (
+              <div className='grid grid-cols-2 grid-rows-3 gap-10 place-items-center'>
+              {dataTables.map(table => (
+                  <CardTable key={table._id} onClick={() => handleCardClick(table._id, table.status)} number={table.table_number} capacity={table.table_number.capacity} location={table.location === 'IN' ? 'Indoor' : 'Outdoor'} status={table.status}/>
+              ))}
+              </div>
+            )}
+          <ModalItem isOpen={isOpen} onOpenChange={onOpenChange} idTable={selectTable}/>
         </div>
       </div>
     </div>

@@ -3,64 +3,56 @@
 import { Button } from '@nextui-org/react'
 import { FilterIcon } from '../components/icons'
 import TableContent from '../components/table'
+import { fetchReservationsList } from '../lib/api'
+import { useEffect, useMemo, useState } from 'react'
+import { useSession } from 'next-auth/react'
+
+const transformData = (items) => {
+  return items.map(item => ({
+    id: item._id,
+    customer_name: item.customer_name,
+    customer_contact: item.customer_contact,
+    table_number: item.table_id.table_number,
+    number_of_people: item.number_of_people,
+    reservation_date: item.reservation_date.split('T')[0],
+    status: item.status
+  }))
+}
 
 const Reservation = () => {
-  const columns = [
-    { label: 'Cliente', key: 'customer' },
-    { label: 'Contacto', key: 'contact' },
-    { label: 'Mesa', key: 'table' },
-    { label: 'N° Personas', key: 'people' },
-    { label: 'Fecha', key: 'date' },
-    { label: 'Estado', key: 'status' }
-  ]
+  const { data: session } = useSession()
 
-  const data = [
-    {
-      id: 1,
-      customer: 'Papa',
-      contact: 'Papa',
-      table: 'Papa',
-      people: 'Papa',
-      date: 'Papa',
-      status: 'Papa'
-    },
-    {
-      id: 2,
-      customer: 'Papa',
-      contact: 'Papa',
-      table: 'Papa',
-      people: 'Papa',
-      date: 'Papa',
-      status: 'Papa'
-    },
-    {
-      id: 3,
-      customer: 'Papa',
-      contact: 'Papa',
-      table: 'Papa',
-      people: 'Papa',
-      date: 'Papa',
-      status: 'Papa'
-    },
-    {
-      id: 4,
-      customer: 'Papa',
-      contact: 'Papa',
-      table: 'Papa',
-      people: 'Papa',
-      date: 'Papa',
-      status: 'Papa'
-    },
-    {
-      id: 5,
-      customer: 'Papa',
-      contact: 'Papa',
-      table: 'Papa',
-      people: 'Papa',
-      date: 'Papa',
-      status: 'Papa'
+  const token = session?.user?.token
+
+  const [loading, setLoading] = useState(true)
+  const [tableDataReservations, setTableData] = useState([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dataReservations = await fetchReservationsList(token, 10)
+
+        setTableData(transformData(dataReservations.reservations))
+        setLoading(false)
+      } catch (error) {
+        console.error('Error fetching reservations list:', error)
+      }
     }
-  ]
+
+    fetchData()
+  }, [])
+
+  const columns = useMemo(
+    () => [
+      { label: 'Cliente', key: 'customer_name' },
+      { label: 'Contacto', key: 'customer_contact' },
+      { label: 'Mesa', key: 'table_number' },
+      { label: 'N° Personas', key: 'number_of_people' },
+      { label: 'Fecha', key: 'reservation_date' },
+      { label: 'Estado', key: 'status' }
+    ],
+    []
+  )
 
   const bottomContent = () => {
     return (
@@ -124,7 +116,7 @@ const Reservation = () => {
         </div>
         <div className="bg-white rounded-lg">
           <div className='flex justify-between items-end pt-4 px-4'>
-            <h3 className="text-grey-800 font-medium text-xl">Productos</h3>
+            <h3 className="text-grey-800 font-medium text-xl">Reservas</h3>
             <div className='flex gap-3'>
               <Button radius='sm' variant='ghost' startContent={<FilterIcon />} className="text-grey-600 font-medium border-grey-100">
                 Filtros
@@ -135,17 +127,19 @@ const Reservation = () => {
             </div>
           </div>
           <div>
-            <TableContent
+            {!loading && (
+              <TableContent
               bottomContent={bottomContent()}
               bottomContentPlacement="outside"
               columns={columns}
-              data={data}
+              data={tableDataReservations}
               classNames={{
                 th: ['bg-transparent', 'border-b'],
                 td: ['text-grey-700 font-medium text-sm']
               }}
               className='p-4'
-            />
+              />
+            )}
           </div>
         </div>
       </div>

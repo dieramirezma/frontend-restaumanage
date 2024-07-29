@@ -1,28 +1,36 @@
 'use client'
 
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, DatePicker } from '@nextui-org/react'
-import { useState } from 'react'
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input } from '@nextui-org/react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { fetchCreateReservation, fetchUpdateTable } from '../lib/api'
 
-export default function ModalItem ({ isOpen, onOpenChange, number }) {
-  console.log('number:', number)
-  const [nameForm, setNameForm] = useState({
-    name: ''
+export default function ModalItem ({ isOpen, onOpenChange, idTable }) {
+  const { register, handleSubmit, formState: { errors }, reset } = useForm()
+  const { data: session } = useSession()
+
+  const router = useRouter()
+
+  const token = session?.user?.token
+
+  const onSubmit = handleSubmit(async data => {
+    data.table_id = idTable
+    const res = await fetchCreateReservation(token, data)
+
+    if (res.error) {
+      console.log(res.error)
+    } else {
+      const res = await fetchUpdateTable(token, idTable, { status: 'Reservada' })
+      if (res.error) {
+        console.log(res.error)
+      } else {
+        onOpenChange(false)
+        reset()
+        router.refresh()
+      }
+    }
   })
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setNameForm((prevData) => ({
-      ...prevData,
-      [name]: value
-    }))
-  }
-
-  const handleSubmit = (e) => {
-    console.log(e)
-    e.preventDefault()
-    console.log('Datos del formulario:', nameForm)
-    onOpenChange(false)
-  }
 
   return (
     <>
@@ -34,19 +42,24 @@ export default function ModalItem ({ isOpen, onOpenChange, number }) {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Nuevo Proveedor</ModalHeader>
+              <form className="flex flex-col gap-4 px-6" onSubmit={onSubmit} noValidate>
+              <ModalHeader className="flex flex-col gap-1">Nueva Reserva</ModalHeader>
               <ModalBody>
-                <form className="flex flex-col gap-4 px-6" onSubmit={handleSubmit}>
                   <Input
-                    name="name"
                     type="text"
                     label="Nombre"
                     labelPlacement='outside-left'
                     placeholder="Ingresa tu nombre"
                     classNames={{ mainWrapper: 'w-60' }}
                     className='flex justify-between'
-                    onChange={handleChange}
-                  />
+                    {...register('customer_name', {
+                      required: {
+                        value: true,
+                        message: 'Este campo es requerido'
+                      }
+                    })}
+                    />
+                    {errors.customer_name && <span className="text-error-500 text-sm font-medium">{errors.customer_name.message}</span>}
                   <Input
                     type="number"
                     label="Contacto"
@@ -54,7 +67,18 @@ export default function ModalItem ({ isOpen, onOpenChange, number }) {
                     placeholder="Ingresa tu numero de contacto"
                     classNames={{ mainWrapper: 'w-60' }}
                     className='flex justify-between'
-                  />
+                    {...register('customer_contact', {
+                      required: {
+                        value: true,
+                        message: 'Este campo es requerido'
+                      },
+                      pattern: {
+                        value: /^[0-9]+$/,
+                        message: 'El número de contacto solo puede contener dígitos'
+                      }
+                    })}
+                    />
+                    {errors.customer_contact && <span className="text-error-500 text-sm font-medium">{errors.customer_contact.message}</span>}
                   <Input
                     type="number"
                     label="Personas"
@@ -62,25 +86,44 @@ export default function ModalItem ({ isOpen, onOpenChange, number }) {
                     placeholder="Ingresa el numero de personas"
                     classNames={{ mainWrapper: 'w-60' }}
                     className='flex justify-between'
-                  />
+                    {...register('number_of_people', {
+                      required: {
+                        value: true,
+                        message: 'Este campo es requerido'
+                      },
+                      min: {
+                        value: 0,
+                        message: 'El numero de personas debe ser mayor a 0'
+                      }
+                    })}
+                    />
+                    {errors.number_of_people && <span className="text-error-500 text-sm font-medium">{errors.number_of_people.message}</span>}
 
-                  <DatePicker
+                  <Input
                     label="Fecha"
+                    type='datetime-local'
                     labelPlacement="outside-left"
-                    dateInputClassNames={{ inputWrapper: 'w-60' }}
-                    granularity="second"
+                    dateInputClassNames={{ mainWrapper: 'w-64' }}
                     className='flex justify-between'
-                  />
-                </form>
+                    {...register('reservation_date', {
+                      valueAsDate: true,
+                      required: {
+                        value: true,
+                        message: 'Este campo es requerido'
+                      }
+                    })}
+                    />
+                    {errors.reservation_date && <span className="text-error-500 text-sm font-medium">{errors.reservation_date.message}</span>}
               </ModalBody>
               <ModalFooter>
                 <Button radius='sm' variant='flat' onPress={onClose} className="text-grey-600 font-medium border-grey-100">
                   Cancelar
                 </Button>
-                <Button type="submit" radius='sm' className='bg-primary-600 text-white font-medium' onClick={handleSubmit}>
+                <Button type="submit" radius='sm' className='bg-primary-600 text-white font-medium' >
                   Crear Reserva
                 </Button>
               </ModalFooter>
+              </form>
             </>
           )}
         </ModalContent>
